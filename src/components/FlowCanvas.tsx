@@ -52,8 +52,8 @@ export const FlowCanvas = forwardRef<HTMLDivElement, FlowCanvasProps>(
       const deltaY = e.clientY - dragState.startPos.y;
       
       const newPosition = {
-        x: dragState.initialScreenPos.x + deltaX,
-        y: dragState.initialScreenPos.y + deltaY
+        x: Math.max(10, dragState.initialScreenPos.x + deltaX),
+        y: Math.max(10, dragState.initialScreenPos.y + deltaY)
       };
       
       updateScreen(dragState.screenId, { position: newPosition });
@@ -90,12 +90,12 @@ export const FlowCanvas = forwardRef<HTMLDivElement, FlowCanvasProps>(
     return (
       <div 
         ref={ref}
-        className="w-full h-full relative overflow-hidden bg-gradient-to-br from-slate-50 to-blue-50"
+        className="w-full h-full relative overflow-auto bg-gradient-to-br from-slate-50 to-blue-50"
         onClick={handleCanvasClick}
       >
         {/* Grid Pattern */}
         <div 
-          className="absolute inset-0 opacity-10"
+          className="absolute inset-0 opacity-10 pointer-events-none"
           style={{
             backgroundImage: `
               radial-gradient(circle, #64748b 1px, transparent 1px)
@@ -105,7 +105,7 @@ export const FlowCanvas = forwardRef<HTMLDivElement, FlowCanvasProps>(
         />
         
         {/* Connection Lines */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none z-10">
+        <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 min-w-full min-h-full">
           {flowData.connections.map(connection => {
             const fromScreen = flowData.screens.find(s => s.id === connection.fromScreenId);
             const toScreen = flowData.screens.find(s => s.id === connection.toScreenId);
@@ -130,7 +130,7 @@ export const FlowCanvas = forwardRef<HTMLDivElement, FlowCanvasProps>(
         </svg>
         
         {/* Screen Nodes */}
-        <div className="absolute inset-0 z-20">
+        <div className="absolute inset-0 z-20 min-w-full min-h-full">
           {flowData.screens.map(screen => (
             <ScreenNode
               key={screen.id}
@@ -143,16 +143,16 @@ export const FlowCanvas = forwardRef<HTMLDivElement, FlowCanvasProps>(
         
         {/* Empty State */}
         {flowData.screens.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg"></div>
+          <div className="absolute inset-0 flex items-center justify-center p-4">
+            <div className="text-center max-w-sm">
+              <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <div className="w-6 h-6 md:w-8 md:h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg"></div>
               </div>
-              <h3 className="text-lg font-semibold text-slate-800 mb-2">Start Building Your Flow</h3>
-              <p className="text-slate-600 mb-4 max-w-sm">
+              <h3 className="text-base md:text-lg font-semibold text-slate-800 mb-2">Start Building Your Flow</h3>
+              <p className="text-sm md:text-base text-slate-600 mb-4">
                 Add screen templates from the sidebar to create your onboarding experience
               </p>
-              <div className="text-sm text-slate-500">
+              <div className="text-xs md:text-sm text-slate-500">
                 Drag screens around the canvas to arrange your flow
               </div>
             </div>
