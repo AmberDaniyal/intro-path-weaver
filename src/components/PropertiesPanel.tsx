@@ -10,22 +10,36 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Screen } from '@/types/flow';
 import { useFlow } from '@/contexts/FlowContext';
-import { Settings, Trash2, Plus } from 'lucide-react';
+import { Settings, Trash2, Plus, ChevronRight } from 'lucide-react';
 
 interface PropertiesPanelProps {
   selectedScreen: Screen | null;
   onScreenUpdate: (screen: Screen | null) => void;
+  onToggle?: () => void;
 }
 
 export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ 
   selectedScreen, 
-  onScreenUpdate 
+  onScreenUpdate,
+  onToggle 
 }) => {
   const { updateScreen, deleteScreen } = useFlow();
 
   if (!selectedScreen) {
     return (
-      <div className="w-80 bg-white/80 backdrop-blur-sm border-l border-slate-200 p-6">
+      <div className="w-80 bg-white/80 backdrop-blur-sm border-l border-slate-200 p-6 relative">
+        {/* Toggle Button */}
+        {onToggle && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onToggle}
+            className="absolute -left-3 top-4 z-10 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50"
+          >
+            <ChevronRight className="w-3 h-3" />
+          </Button>
+        )}
+        
         <div className="text-center py-12">
           <Settings className="w-12 h-12 text-slate-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-slate-800 mb-2">No Screen Selected</h3>
@@ -52,12 +66,26 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
   };
 
   const handleDeleteScreen = () => {
-    deleteScreen(selectedScreen.id);
-    onScreenUpdate(null);
+    if (confirm('Are you sure you want to delete this screen?')) {
+      deleteScreen(selectedScreen.id);
+      onScreenUpdate(null);
+    }
   };
 
   return (
-    <div className="w-80 bg-white/80 backdrop-blur-sm border-l border-slate-200 overflow-y-auto">
+    <div className="w-80 bg-white/80 backdrop-blur-sm border-l border-slate-200 overflow-y-auto relative">
+      {/* Toggle Button */}
+      {onToggle && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onToggle}
+          className="absolute -left-3 top-4 z-10 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50"
+        >
+          <ChevronRight className="w-3 h-3" />
+        </Button>
+      )}
+
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

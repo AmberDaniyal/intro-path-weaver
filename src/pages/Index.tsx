@@ -9,7 +9,7 @@ import { FlowProvider, useFlow } from '@/contexts/FlowContext';
 import { Screen } from '@/types/flow';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Menu, X, PanelLeft, PanelRight } from 'lucide-react';
+import { Menu, X, Play } from 'lucide-react';
 
 const IndexContent = () => {
   const [selectedScreen, setSelectedScreen] = useState<Screen | null>(null);
@@ -21,14 +21,24 @@ const IndexContent = () => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const { flowData } = useFlow();
 
+  const handleDemoClick = () => {
+    setIsPreviewOpen(true);
+  };
+
   return (
     <div className="h-screen bg-gradient-to-br from-slate-50 to-blue-50 overflow-hidden flex flex-col">
       {/* Demo Banner */}
       <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 md:px-6 py-2 text-center text-xs md:text-sm shrink-0">
         🚀 <strong>Live Demo</strong> - Explore all features of the Onboarding Flow Builder
-        <Badge variant="secondary" className="ml-2 bg-white/20 text-white border-white/30 text-xs">
+        <Button 
+          variant="secondary" 
+          size="sm"
+          onClick={handleDemoClick}
+          className="ml-3 bg-white/20 text-white border-white/30 text-xs hover:bg-white/30 h-6 px-2"
+        >
+          <Play className="w-3 h-3 mr-1" />
           Interactive Demo
-        </Badge>
+        </Button>
       </div>
 
       {/* Header */}
@@ -57,26 +67,6 @@ const IndexContent = () => {
         </div>
         
         <div className="flex items-center gap-2">
-          {/* Panel Toggle Buttons */}
-          <div className="hidden md:flex items-center gap-1 mr-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowSidebar(!showSidebar)}
-              className={`${showSidebar ? 'bg-blue-50 border-blue-200' : ''}`}
-            >
-              <PanelLeft className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowProperties(!showProperties)}
-              className={`${showProperties ? 'bg-blue-50 border-blue-200' : ''}`}
-            >
-              <PanelRight className="w-4 h-4" />
-            </Button>
-          </div>
-          
           {/* Properties Panel Button (Mobile) */}
           <Button
             variant="ghost"
@@ -96,7 +86,10 @@ const IndexContent = () => {
         {/* Left Sidebar - Desktop */}
         {showSidebar && (
           <div className="hidden md:block">
-            <Sidebar onScreenSelect={setSelectedScreen} />
+            <Sidebar 
+              onScreenSelect={setSelectedScreen} 
+              onToggle={() => setShowSidebar(false)}
+            />
           </div>
         )}
 
@@ -120,6 +113,30 @@ const IndexContent = () => {
         
         {/* Canvas Area */}
         <div className="flex-1 relative overflow-hidden min-w-0">
+          {/* Show Sidebar Button */}
+          {!showSidebar && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowSidebar(true)}
+              className="absolute left-4 top-4 z-20 bg-white border border-slate-200 shadow-sm"
+            >
+              <Menu className="w-4 h-4" />
+            </Button>
+          )}
+
+          {/* Show Properties Button */}
+          {!showProperties && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowProperties(true)}
+              className="absolute right-4 top-4 z-20 bg-white border border-slate-200 shadow-sm"
+            >
+              Properties
+            </Button>
+          )}
+
           <FlowCanvas 
             ref={canvasRef}
             selectedScreen={selectedScreen}
@@ -138,6 +155,7 @@ const IndexContent = () => {
             <PropertiesPanel 
               selectedScreen={selectedScreen}
               onScreenUpdate={setSelectedScreen}
+              onToggle={() => setShowProperties(false)}
             />
           </div>
         )}
