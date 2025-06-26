@@ -9,7 +9,7 @@ import { FlowProvider, useFlow } from '@/contexts/FlowContext';
 import { Screen } from '@/types/flow';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Play, Sidebar as SidebarIcon, Settings } from 'lucide-react';
+import { Menu, X, Play } from 'lucide-react';
 
 const IndexContent = () => {
   const [selectedScreen, setSelectedScreen] = useState<Screen | null>(null);
@@ -67,28 +67,6 @@ const IndexContent = () => {
         </div>
         
         <div className="flex items-center gap-2">
-          {/* Desktop Toggle Buttons */}
-          <div className="hidden md:flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowSidebar(!showSidebar)}
-              className={`${showSidebar ? 'bg-blue-50 text-blue-600' : 'text-slate-600'}`}
-            >
-              <SidebarIcon className="w-4 h-4 mr-1" />
-              Templates
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowProperties(!showProperties)}
-              className={`${showProperties ? 'bg-blue-50 text-blue-600' : 'text-slate-600'}`}
-            >
-              <Settings className="w-4 h-4 mr-1" />
-              Properties
-            </Button>
-          </div>
-          
           {/* Properties Panel Button (Mobile) */}
           <Button
             variant="ghost"
@@ -106,14 +84,11 @@ const IndexContent = () => {
       {/* Main Content */}
       <div className="flex h-full min-h-0">
         {/* Left Sidebar - Desktop */}
-        {showSidebar && (
-          <div className="hidden md:block">
-            <Sidebar 
-              onScreenSelect={setSelectedScreen} 
-              onToggle={() => setShowSidebar(false)}
-            />
-          </div>
-        )}
+        <Sidebar 
+          onScreenSelect={setSelectedScreen} 
+          onToggle={() => setShowSidebar(!showSidebar)}
+          isCollapsed={!showSidebar}
+        />
 
         {/* Mobile Sidebar Overlay */}
         {isSidebarOpen && (
@@ -148,15 +123,12 @@ const IndexContent = () => {
         </div>
         
         {/* Right Properties Panel - Desktop */}
-        {showProperties && (
-          <div className="hidden md:block">
-            <PropertiesPanel 
-              selectedScreen={selectedScreen}
-              onScreenUpdate={setSelectedScreen}
-              onToggle={() => setShowProperties(false)}
-            />
-          </div>
-        )}
+        <PropertiesPanel 
+          selectedScreen={selectedScreen}
+          onScreenUpdate={setSelectedScreen}
+          onToggle={() => setShowProperties(!showProperties)}
+          isCollapsed={!showProperties}
+        />
 
         {/* Mobile Properties Panel Overlay */}
         {isPropertiesOpen && (

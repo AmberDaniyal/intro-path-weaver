@@ -1,8 +1,8 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { 
   Sparkles, 
   FileText, 
@@ -11,7 +11,8 @@ import {
   CheckCircle,
   Plus,
   Search,
-  ChevronLeft
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { Screen } from '@/types/flow';
 import { useFlow } from '@/contexts/FlowContext';
@@ -19,6 +20,7 @@ import { useFlow } from '@/contexts/FlowContext';
 interface SidebarProps {
   onScreenSelect: (screen: Screen) => void;
   onToggle?: () => void;
+  isCollapsed?: boolean;
 }
 
 const screenTemplates = [
@@ -59,7 +61,7 @@ const screenTemplates = [
   }
 ];
 
-export const Sidebar: React.FC<SidebarProps> = ({ onScreenSelect, onToggle }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ onScreenSelect, onToggle, isCollapsed = false }) => {
   const [activeTab, setActiveTab] = useState<'templates' | 'screens'>('templates');
   const { flowData, addScreen, setSelectedScreen } = useFlow();
 
@@ -87,19 +89,60 @@ export const Sidebar: React.FC<SidebarProps> = ({ onScreenSelect, onToggle }) =>
     addScreen(newScreen);
   };
 
+  if (isCollapsed) {
+    return (
+      <div className="w-12 bg-white/80 backdrop-blur-sm border-r border-slate-200 flex flex-col items-center py-4 relative">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onToggle}
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50"
+              >
+                <ChevronRight className="w-3 h-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>Expand sidebar</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <div className="flex flex-col items-center gap-3 mt-8">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+            <Sparkles className="w-4 h-4 text-white" />
+          </div>
+          <div className="w-px h-8 bg-slate-200" />
+          <Badge variant="secondary" className="text-xs rotate-90 whitespace-nowrap">
+            {flowData.screens.length}
+          </Badge>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-80 bg-white/80 backdrop-blur-sm border-r border-slate-200 flex flex-col relative">
       {/* Toggle Button */}
-      {onToggle && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onToggle}
-          className="absolute -right-3 top-4 z-10 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50"
-        >
-          <ChevronLeft className="w-3 h-3" />
-        </Button>
-      )}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onToggle}
+              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50"
+            >
+              <ChevronLeft className="w-3 h-3" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            <p>Collapse sidebar</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       {/* Tab Navigation */}
       <div className="flex border-b border-slate-200">

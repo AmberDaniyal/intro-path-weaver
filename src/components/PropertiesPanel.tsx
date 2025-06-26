@@ -8,37 +8,83 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Screen } from '@/types/flow';
 import { useFlow } from '@/contexts/FlowContext';
-import { Settings, Trash2, Plus, ChevronRight } from 'lucide-react';
+import { Settings, Trash2, Plus, ChevronRight, ChevronLeft } from 'lucide-react';
 
 interface PropertiesPanelProps {
   selectedScreen: Screen | null;
   onScreenUpdate: (screen: Screen | null) => void;
   onToggle?: () => void;
+  isCollapsed?: boolean;
 }
 
 export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ 
   selectedScreen, 
   onScreenUpdate,
-  onToggle 
+  onToggle,
+  isCollapsed = false 
 }) => {
   const { updateScreen, deleteScreen } = useFlow();
+
+  if (isCollapsed) {
+    return (
+      <div className="w-12 bg-white/80 backdrop-blur-sm border-l border-slate-200 flex flex-col items-center py-4 relative">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onToggle}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50"
+              >
+                <ChevronLeft className="w-3 h-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <p>Expand properties</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <div className="flex flex-col items-center gap-3 mt-8">
+          <Settings className="w-6 h-6 text-slate-400" />
+          {selectedScreen && (
+            <>
+              <div className="w-px h-8 bg-slate-200" />
+              <Badge variant="secondary" className="text-xs rotate-90 whitespace-nowrap">
+                Selected
+              </Badge>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   if (!selectedScreen) {
     return (
       <div className="w-80 bg-white/80 backdrop-blur-sm border-l border-slate-200 p-6 relative">
         {/* Toggle Button */}
-        {onToggle && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onToggle}
-            className="absolute -left-3 top-4 z-10 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50"
-          >
-            <ChevronRight className="w-3 h-3" />
-          </Button>
-        )}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onToggle}
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50"
+              >
+                <ChevronRight className="w-3 h-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <p>Collapse properties</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         
         <div className="text-center py-12">
           <Settings className="w-12 h-12 text-slate-300 mx-auto mb-4" />
@@ -75,16 +121,23 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
   return (
     <div className="w-80 bg-white/80 backdrop-blur-sm border-l border-slate-200 overflow-y-auto relative">
       {/* Toggle Button */}
-      {onToggle && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onToggle}
-          className="absolute -left-3 top-4 z-10 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50"
-        >
-          <ChevronRight className="w-3 h-3" />
-        </Button>
-      )}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onToggle}
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50"
+            >
+              <ChevronRight className="w-3 h-3" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="left">
+            <p>Collapse properties</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       <div className="p-6 space-y-6">
         {/* Header */}

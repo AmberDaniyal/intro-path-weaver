@@ -1,5 +1,5 @@
 
-import React, { forwardRef, useState, useRef, useCallback } from 'react';
+import React, { forwardRef, useState, useRef, useCallback, useEffect } from 'react';
 import { Screen } from '@/types/flow';
 import { ScreenNode } from '@/components/ScreenNode';
 import { ConnectionLine } from '@/components/ConnectionLine';
@@ -12,7 +12,7 @@ interface FlowCanvasProps {
 
 export const FlowCanvas = forwardRef<HTMLDivElement, FlowCanvasProps>(
   ({ selectedScreen, onScreenSelect }, ref) => {
-    const { flowData, updateScreen, setSelectedScreen } = useFlow();
+    const { flowData, updateScreen, setSelectedScreen, deleteScreen } = useFlow();
     const [dragState, setDragState] = useState<{
       isDragging: boolean;
       screenId: string | null;
@@ -27,6 +27,21 @@ export const FlowCanvas = forwardRef<HTMLDivElement, FlowCanvasProps>(
 
     const canvasRef = useRef<HTMLDivElement>(null);
 
+    // Keyboard event handler for delete key
+    useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Delete' && selectedScreen) {
+          if (confirm('Are you sure you want to delete this screen?')) {
+            deleteScreen(selectedScreen.id);
+            onScreenSelect(null);
+          }
+        }
+      };
+
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [selectedScreen, deleteScreen, onScreenSelect]);
+
     const handleMouseDown = useCallback((e: React.MouseEvent, screenId: string) => {
       e.preventDefault();
       e.stopPropagation();
@@ -40,10 +55,12 @@ export const FlowCanvas = forwardRef<HTMLDivElement, FlowCanvasProps>(
         startPos: { x: e.clientX, y: e.clientY },
         initialScreenPos: screen.position
       });
-      
+    }, [flowData.screens]);
+
+    const handleScreenSelect = useCallback((screen: Screen) => {
       onScreenSelect(screen);
-      setSelectedScreen(screenId);
-    }, [flowData.screens, onScreenSelect, setSelectedScreen]);
+      setSelectedScreen(screen.id);
+    }, [onScreenSelect, setSelectedScreen]);
 
     const handleMouseMove = useCallback((e: MouseEvent) => {
       if (!dragState.isDragging || !dragState.screenId) return;
@@ -90,8 +107,9 @@ export const FlowCanvas = forwardRef<HTMLDivElement, FlowCanvasProps>(
     return (
       <div 
         ref={ref}
-        className="w-full h-full relative overflow-auto bg-gradient-to-br from-slate-50 to-blue-50"
+        className="w-full h-full relative overflow-auto bg-gradient-to-br from-slate-50 to-blue-50 focus:outline-none"
         onClick={handleCanvasClick}
+        tabIndex={0}
       >
         {/* Grid Pattern */}
         <div 
@@ -137,6 +155,7 @@ export const FlowCanvas = forwardRef<HTMLDivElement, FlowCanvasProps>(
               screen={screen}
               isSelected={selectedScreen?.id === screen.id}
               onMouseDown={(e) => handleMouseDown(e, screen.id)}
+              onSelect={() => handleScreenSelect(screen)}
             />
           ))}
         </div>
