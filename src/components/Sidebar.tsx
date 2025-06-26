@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -91,7 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onScreenSelect, onToggle, isCo
 
   if (isCollapsed) {
     return (
-      <div className="w-12 bg-white/80 backdrop-blur-sm border-r border-slate-200 flex flex-col items-center py-4 relative">
+      <div className="w-12 bg-white/95 backdrop-blur-sm border-r border-slate-200/80 flex flex-col items-center py-4 relative">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -99,7 +100,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onScreenSelect, onToggle, isCo
                 variant="ghost"
                 size="sm"
                 onClick={onToggle}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50"
+                className="absolute -right-3 top-1/2 -translate-y-1/2 z-20 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50 flex items-center justify-center"
               >
                 <ChevronRight className="w-3 h-3" />
               </Button>
@@ -124,8 +125,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onScreenSelect, onToggle, isCo
   }
 
   return (
-    <div className="w-80 bg-white/80 backdrop-blur-sm border-r border-slate-200 flex flex-col relative">
-      {/* Toggle Button */}
+    <div className="w-80 bg-white/95 backdrop-blur-sm border-r border-slate-200/80 flex flex-col relative">
+      {/* Modern Toggle Button */}
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -133,7 +134,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onScreenSelect, onToggle, isCo
               variant="ghost"
               size="sm"
               onClick={onToggle}
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 z-10 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50"
+              className="absolute -right-3 top-1/2 -translate-y-1/2 z-20 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50 flex items-center justify-center"
             >
               <ChevronLeft className="w-3 h-3" />
             </Button>

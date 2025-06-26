@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -9,6 +8,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Screen } from '@/types/flow';
 import { useFlow } from '@/contexts/FlowContext';
 import { Settings, Trash2, Plus, ChevronRight, ChevronLeft } from 'lucide-react';
@@ -26,11 +35,12 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
   onToggle,
   isCollapsed = false 
 }) => {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { updateScreen, deleteScreen } = useFlow();
 
   if (isCollapsed) {
     return (
-      <div className="w-12 bg-white/80 backdrop-blur-sm border-l border-slate-200 flex flex-col items-center py-4 relative">
+      <div className="w-12 bg-white/95 backdrop-blur-sm border-l border-slate-200/80 flex flex-col items-center py-4 relative">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -38,7 +48,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                 variant="ghost"
                 size="sm"
                 onClick={onToggle}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50"
+                className="absolute -left-3 top-1/2 -translate-y-1/2 z-20 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50 flex items-center justify-center"
               >
                 <ChevronLeft className="w-3 h-3" />
               </Button>
@@ -66,8 +76,8 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
 
   if (!selectedScreen) {
     return (
-      <div className="w-80 bg-white/80 backdrop-blur-sm border-l border-slate-200 p-6 relative">
-        {/* Toggle Button */}
+      <div className="w-80 bg-white/95 backdrop-blur-sm border-l border-slate-200/80 p-6 relative">
+        {/* Modern Toggle Button */}
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -75,7 +85,7 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
                 variant="ghost"
                 size="sm"
                 onClick={onToggle}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50"
+                className="absolute -left-3 top-1/2 -translate-y-1/2 z-20 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50 flex items-center justify-center"
               >
                 <ChevronRight className="w-3 h-3" />
               </Button>
@@ -112,249 +122,271 @@ export const PropertiesPanel: React.FC<PropertiesPanelProps> = ({
   };
 
   const handleDeleteScreen = () => {
-    if (confirm('Are you sure you want to delete this screen?')) {
-      deleteScreen(selectedScreen.id);
-      onScreenUpdate(null);
-    }
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    deleteScreen(selectedScreen.id);
+    onScreenUpdate(null);
+    setShowDeleteDialog(false);
   };
 
   return (
-    <div className="w-80 bg-white/80 backdrop-blur-sm border-l border-slate-200 overflow-y-auto relative">
-      {/* Toggle Button */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onToggle}
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50"
-            >
-              <ChevronRight className="w-3 h-3" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="left">
-            <p>Collapse properties</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-800">Screen Properties</h3>
-            <Badge variant="secondary" className="mt-1 capitalize">
-              {selectedScreen.type}
-            </Badge>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={handleDeleteScreen}
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
-        </div>
-
-        {/* Basic Properties */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Basic Properties</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="title" className="text-xs font-medium text-slate-600">Title</Label>
-              <Input
-                id="title"
-                value={selectedScreen.properties.title}
-                onChange={(e) => handlePropertyChange('properties.title', e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="description" className="text-xs font-medium text-slate-600">Description</Label>
-              <Textarea
-                id="description"
-                value={selectedScreen.properties.description}
-                onChange={(e) => handlePropertyChange('properties.description', e.target.value)}
-                className="mt-1 resize-none"
-                rows={3}
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="buttonText" className="text-xs font-medium text-slate-600">Button Text</Label>
-              <Input
-                id="buttonText"
-                value={selectedScreen.properties.buttonText}
-                onChange={(e) => handlePropertyChange('properties.buttonText', e.target.value)}
-                className="mt-1"
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="secondaryButtonText" className="text-xs font-medium text-slate-600">Secondary Button (Optional)</Label>
-              <Input
-                id="secondaryButtonText"
-                value={selectedScreen.properties.secondaryButtonText || ''}
-                onChange={(e) => handlePropertyChange('properties.secondaryButtonText', e.target.value)}
-                className="mt-1"
-                placeholder="Skip, Back, etc."
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Layout & Appearance */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Layout & Appearance</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label className="text-xs font-medium text-slate-600">Layout Type</Label>
-              <Select
-                value={selectedScreen.properties.layout}
-                onValueChange={(value) => handlePropertyChange('properties.layout', value)}
+    <>
+      <div className="w-80 bg-white/95 backdrop-blur-sm border-l border-slate-200/80 overflow-y-auto relative">
+        {/* Modern Toggle Button */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onToggle}
+                className="absolute -left-3 top-1/2 -translate-y-1/2 z-20 bg-white border border-slate-200 shadow-sm rounded-full w-6 h-6 p-0 hover:bg-slate-50 flex items-center justify-center"
               >
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="modal">Modal</SelectItem>
-                  <SelectItem value="fullscreen">Fullscreen</SelectItem>
-                  <SelectItem value="tooltip">Tooltip</SelectItem>
-                  <SelectItem value="banner">Banner</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <Label className="text-xs font-medium text-slate-600">Size</Label>
-              <Select
-                value={selectedScreen.properties.size}
-                onValueChange={(value) => handlePropertyChange('properties.size', value)}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="small">Small</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="large">Large</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <Label className="text-xs font-medium text-slate-600">Animation</Label>
-              <Select
-                value={selectedScreen.properties.style.animation}
-                onValueChange={(value) => handlePropertyChange('properties.style.animation', value)}
-              >
-                <SelectTrigger className="mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="fade">Fade</SelectItem>
-                  <SelectItem value="slide">Slide</SelectItem>
-                  <SelectItem value="bounce">Bounce</SelectItem>
-                  <SelectItem value="scale">Scale</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Style */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Style</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="backgroundColor" className="text-xs font-medium text-slate-600">Background Color</Label>
-              <div className="flex gap-2 mt-1">
-                <Input
-                  id="backgroundColor"
-                  type="color"
-                  value={selectedScreen.properties.style.backgroundColor}
-                  onChange={(e) => handlePropertyChange('properties.style.backgroundColor', e.target.value)}
-                  className="w-12 h-8 p-1 border rounded"
-                />
-                <Input
-                  value={selectedScreen.properties.style.backgroundColor}
-                  onChange={(e) => handlePropertyChange('properties.style.backgroundColor', e.target.value)}
-                  className="flex-1"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <Label htmlFor="buttonColor" className="text-xs font-medium text-slate-600">Button Color</Label>
-              <div className="flex gap-2 mt-1">
-                <Input
-                  id="buttonColor"
-                  type="color"
-                  value={selectedScreen.properties.style.buttonColor}
-                  onChange={(e) => handlePropertyChange('properties.style.buttonColor', e.target.value)}
-                  className="w-12 h-8 p-1 border rounded"
-                />
-                <Input
-                  value={selectedScreen.properties.style.buttonColor}
-                  onChange={(e) => handlePropertyChange('properties.style.buttonColor', e.target.value)}
-                  className="flex-1"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Actions */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center justify-between">
-              Actions
-              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                <Plus className="w-3 h-3" />
+                <ChevronRight className="w-3 h-3" />
               </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {selectedScreen.actions.length === 0 ? (
-              <div className="text-center py-4">
-                <p className="text-xs text-slate-500 mb-2">No actions defined</p>
-                <Button variant="outline" size="sm" className="text-xs">
-                  Add Action
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <p>Collapse properties</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        <div className="p-6 space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-800">Screen Properties</h3>
+              <Badge variant="secondary" className="mt-1 capitalize">
+                {selectedScreen.type}
+              </Badge>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleDeleteScreen}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+
+          {/* Basic Properties */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm">Basic Properties</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="title" className="text-xs font-medium text-slate-600">Title</Label>
+                <Input
+                  id="title"
+                  value={selectedScreen.properties.title}
+                  onChange={(e) => handlePropertyChange('properties.title', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="description" className="text-xs font-medium text-slate-600">Description</Label>
+                <Textarea
+                  id="description"
+                  value={selectedScreen.properties.description}
+                  onChange={(e) => handlePropertyChange('properties.description', e.target.value)}
+                  className="mt-1 resize-none"
+                  rows={3}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="buttonText" className="text-xs font-medium text-slate-600">Button Text</Label>
+                <Input
+                  id="buttonText"
+                  value={selectedScreen.properties.buttonText}
+                  onChange={(e) => handlePropertyChange('properties.buttonText', e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="secondaryButtonText" className="text-xs font-medium text-slate-600">Secondary Button (Optional)</Label>
+                <Input
+                  id="secondaryButtonText"
+                  value={selectedScreen.properties.secondaryButtonText || ''}
+                  onChange={(e) => handlePropertyChange('properties.secondaryButtonText', e.target.value)}
+                  className="mt-1"
+                  placeholder="Skip, Back, etc."
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Layout & Appearance */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm">Layout & Appearance</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="text-xs font-medium text-slate-600">Layout Type</Label>
+                <Select
+                  value={selectedScreen.properties.layout}
+                  onValueChange={(value) => handlePropertyChange('properties.layout', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="modal">Modal</SelectItem>
+                    <SelectItem value="fullscreen">Fullscreen</SelectItem>
+                    <SelectItem value="tooltip">Tooltip</SelectItem>
+                    <SelectItem value="banner">Banner</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label className="text-xs font-medium text-slate-600">Size</Label>
+                <Select
+                  value={selectedScreen.properties.size}
+                  onValueChange={(value) => handlePropertyChange('properties.size', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="small">Small</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="large">Large</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label className="text-xs font-medium text-slate-600">Animation</Label>
+                <Select
+                  value={selectedScreen.properties.style.animation}
+                  onValueChange={(value) => handlePropertyChange('properties.style.animation', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fade">Fade</SelectItem>
+                    <SelectItem value="slide">Slide</SelectItem>
+                    <SelectItem value="bounce">Bounce</SelectItem>
+                    <SelectItem value="scale">Scale</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Style */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm">Style</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="backgroundColor" className="text-xs font-medium text-slate-600">Background Color</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    id="backgroundColor"
+                    type="color"
+                    value={selectedScreen.properties.style.backgroundColor}
+                    onChange={(e) => handlePropertyChange('properties.style.backgroundColor', e.target.value)}
+                    className="w-12 h-8 p-1 border rounded"
+                  />
+                  <Input
+                    value={selectedScreen.properties.style.backgroundColor}
+                    onChange={(e) => handlePropertyChange('properties.style.backgroundColor', e.target.value)}
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="buttonColor" className="text-xs font-medium text-slate-600">Button Color</Label>
+                <div className="flex gap-2 mt-1">
+                  <Input
+                    id="buttonColor"
+                    type="color"
+                    value={selectedScreen.properties.style.buttonColor}
+                    onChange={(e) => handlePropertyChange('properties.style.buttonColor', e.target.value)}
+                    className="w-12 h-8 p-1 border rounded"
+                  />
+                  <Input
+                    value={selectedScreen.properties.style.buttonColor}
+                    onChange={(e) => handlePropertyChange('properties.style.buttonColor', e.target.value)}
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Actions */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center justify-between">
+                Actions
+                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                  <Plus className="w-3 h-3" />
                 </Button>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {selectedScreen.actions.map((action, index) => (
-                  <div key={index} className="p-2 bg-slate-50 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <Badge variant="outline" className="text-xs capitalize">
-                        {action.trigger}
-                      </Badge>
-                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </div>
-                    {action.targetScreenId && (
-                      <div className="text-xs text-slate-600 mt-1">
-                        → {action.targetScreenId}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {selectedScreen.actions.length === 0 ? (
+                <div className="text-center py-4">
+                  <p className="text-xs text-slate-500 mb-2">No actions defined</p>
+                  <Button variant="outline" size="sm" className="text-xs">
+                    Add Action
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {selectedScreen.actions.map((action, index) => (
+                    <div key={index} className="p-2 bg-slate-50 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="text-xs capitalize">
+                          {action.trigger}
+                        </Badge>
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
                       </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                      {action.targetScreenId && (
+                        <div className="text-xs text-slate-600 mt-1">
+                          → {action.targetScreenId}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Screen</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this screen? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };

@@ -1,5 +1,14 @@
-
 import React, { forwardRef, useState, useRef, useCallback, useEffect } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Screen } from '@/types/flow';
 import { ScreenNode } from '@/components/ScreenNode';
 import { ConnectionLine } from '@/components/ConnectionLine';
@@ -13,6 +22,7 @@ interface FlowCanvasProps {
 export const FlowCanvas = forwardRef<HTMLDivElement, FlowCanvasProps>(
   ({ selectedScreen, onScreenSelect }, ref) => {
     const { flowData, updateScreen, setSelectedScreen, deleteScreen } = useFlow();
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [dragState, setDragState] = useState<{
       isDragging: boolean;
       screenId: string | null;
@@ -31,16 +41,21 @@ export const FlowCanvas = forwardRef<HTMLDivElement, FlowCanvasProps>(
     useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === 'Delete' && selectedScreen) {
-          if (confirm('Are you sure you want to delete this screen?')) {
-            deleteScreen(selectedScreen.id);
-            onScreenSelect(null);
-          }
+          setShowDeleteDialog(true);
         }
       };
 
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedScreen, deleteScreen, onScreenSelect]);
+    }, [selectedScreen]);
+
+    const confirmDelete = () => {
+      if (selectedScreen) {
+        deleteScreen(selectedScreen.id);
+        onScreenSelect(null);
+      }
+      setShowDeleteDialog(false);
+    };
 
     const handleMouseDown = useCallback((e: React.MouseEvent, screenId: string) => {
       e.preventDefault();
@@ -105,79 +120,98 @@ export const FlowCanvas = forwardRef<HTMLDivElement, FlowCanvasProps>(
     };
 
     return (
-      <div 
-        ref={ref}
-        className="w-full h-full relative overflow-auto bg-gradient-to-br from-slate-50 to-blue-50 focus:outline-none"
-        onClick={handleCanvasClick}
-        tabIndex={0}
-      >
-        {/* Grid Pattern */}
+      <>
         <div 
-          className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage: `
-              radial-gradient(circle, #64748b 1px, transparent 1px)
-            `,
-            backgroundSize: '20px 20px'
-          }}
-        />
-        
-        {/* Connection Lines */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 min-w-full min-h-full">
-          {flowData.connections.map(connection => {
-            const fromScreen = flowData.screens.find(s => s.id === connection.fromScreenId);
-            const toScreen = flowData.screens.find(s => s.id === connection.toScreenId);
-            
-            if (!fromScreen || !toScreen) return null;
-            
-            return (
-              <ConnectionLine
-                key={connection.id}
-                from={{
-                  x: fromScreen.position.x + 150,
-                  y: fromScreen.position.y + 100
-                }}
-                to={{
-                  x: toScreen.position.x + 150,
-                  y: toScreen.position.y + 100
-                }}
-                label={connection.label}
+          ref={ref}
+          className="w-full h-full relative overflow-auto bg-gradient-to-br from-slate-50 to-blue-50 focus:outline-none"
+          onClick={handleCanvasClick}
+          tabIndex={0}
+        >
+          {/* Grid Pattern */}
+          <div 
+            className="absolute inset-0 opacity-10 pointer-events-none"
+            style={{
+              backgroundImage: `
+                radial-gradient(circle, #64748b 1px, transparent 1px)
+              `,
+              backgroundSize: '20px 20px'
+            }}
+          />
+          
+          {/* Connection Lines */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 min-w-full min-h-full">
+            {flowData.connections.map(connection => {
+              const fromScreen = flowData.screens.find(s => s.id === connection.fromScreenId);
+              const toScreen = flowData.screens.find(s => s.id === connection.toScreenId);
+              
+              if (!fromScreen || !toScreen) return null;
+              
+              return (
+                <ConnectionLine
+                  key={connection.id}
+                  from={{
+                    x: fromScreen.position.x + 150,
+                    y: fromScreen.position.y + 100
+                  }}
+                  to={{
+                    x: toScreen.position.x + 150,
+                    y: toScreen.position.y + 100
+                  }}
+                  label={connection.label}
+                />
+              );
+            })}
+          </svg>
+          
+          {/* Screen Nodes */}
+          <div className="absolute inset-0 z-20 min-w-full min-h-full">
+            {flowData.screens.map(screen => (
+              <ScreenNode
+                key={screen.id}
+                screen={screen}
+                isSelected={selectedScreen?.id === screen.id}
+                onMouseDown={(e) => handleMouseDown(e, screen.id)}
+                onSelect={() => handleScreenSelect(screen)}
               />
-            );
-          })}
-        </svg>
-        
-        {/* Screen Nodes */}
-        <div className="absolute inset-0 z-20 min-w-full min-h-full">
-          {flowData.screens.map(screen => (
-            <ScreenNode
-              key={screen.id}
-              screen={screen}
-              isSelected={selectedScreen?.id === screen.id}
-              onMouseDown={(e) => handleMouseDown(e, screen.id)}
-              onSelect={() => handleScreenSelect(screen)}
-            />
-          ))}
-        </div>
-        
-        {/* Empty State */}
-        {flowData.screens.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center p-4">
-            <div className="text-center max-w-sm">
-              <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <div className="w-6 h-6 md:w-8 md:h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg"></div>
-              </div>
-              <h3 className="text-base md:text-lg font-semibold text-slate-800 mb-2">Start Building Your Flow</h3>
-              <p className="text-sm md:text-base text-slate-600 mb-4">
-                Add screen templates from the sidebar to create your onboarding experience
-              </p>
-              <div className="text-xs md:text-sm text-slate-500">
-                Drag screens around the canvas to arrange your flow
+            ))}
+          </div>
+          
+          {/* Empty State */}
+          {flowData.screens.length === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center p-4">
+              <div className="text-center max-w-sm">
+                <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <div className="w-6 h-6 md:w-8 md:h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg"></div>
+                </div>
+                <h3 className="text-base md:text-lg font-semibold text-slate-800 mb-2">Start Building Your Flow</h3>
+                <p className="text-sm md:text-base text-slate-600 mb-4">
+                  Add screen templates from the sidebar to create your onboarding experience
+                </p>
+                <div className="text-xs md:text-sm text-slate-500">
+                  Drag screens around the canvas to arrange your flow
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete Screen</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete this screen? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </>
     );
   }
 );
